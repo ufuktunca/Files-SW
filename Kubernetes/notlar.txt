@@ -1,0 +1,115 @@
+pods ("docker daki containerlar diyebiliriz.Podlar deploymenttaki tüm
+ containerlara denir")
+
+services("kubernetesimizi dış dünyaya - ineternete açılmasına yaran bir port verir.
+Deploymentler yml türünde yazılır ve containere napıcağını hangi image i
+çekmesi gerektiğini söyler.")
+
+kubectl apply -f ./deployment.yaml ("yaml dosyasını kümeye uygular -f ise göndericeğimiz yaml ın ismini belitrir --filename")
+
+kubectl expose deployment tomcat-deployment --type=NodePort ("tomcat i deploylar ve exposelar type is ip vermeye yarar gibi.")
+
+1.ders sonu-------
+1-)Apply ile bir deployment oluşturuyor
+2-)expose ile bu deploymenti yayıyor
+3-)minikube service deployment ismi ilede bu deploymentın kodlarına bakarak servisi açıyor.
+
+
+
+ders 2 ------------------------
+
+kubectl get pods ("çalışan containerleri getirir.")
+
+kubectl describe pod("tüm podlar hakkında detaylı bilgi içerir")
+
+kubectl describe pod tomcat("sadece tomcati detaylı bilgilerini getirir")
+
+post-forward komutu bilgisayarımzda çalışan kubernetes i başka bir bilgisayara taşımaya yarar.
+
+ Get output from running pod 123456-7890, using the first container by default
+kubectl attach 123456-7890
+
+# Get output from ruby-container from pod 123456-7890
+kubectl attach 123456-7890 -c ruby-container
+
+
+kubectl exec -it tomcat-deployment-59dd64f4dc-xjw7z bash ("podun içine girmemize yarar")
+
+kubectl run demene --image=nginx --port=80("pod oluşturur")
+
+ders 3 -----------------------------------------
+
+kuberctl scale --replicas=4 deployment/tomcat-deployment("scale işlemini uygular ve replika sayısı yükseltir")
+
+kubectl get deployment("deploymetnları getirir.")
+
+kubectl expose deployment tomcat-deployment --type=LoadBalancer --port=8080 --target-port=8080 --name=loadbalancer ("scaling işlemi için bir load balancer oluşturur")
+
+
+
+-------------------------Kuernetes Tutorial ----------------------------------------------------------
+kubectl get nodes("çalışan nodeları getirir.")
+
+minikube dashboard ("serverin sitesini açar")
+
+
+kubectl create deployment hello-node --image=gcr.io/hello-minikube-zero-install/hello-node ("yeni bir deployment oluşturur ve bu deploymenti image e göre seçer")
+
+loadbalancer bir servisi clusterin dışına çıkarmak için kullanılır.
+
+--------------servis açma------------------------------------------------
+kubectl create deployment demene1 --image=nginx
+
+kubectl expose deployment demene1 --type=LoadBalancer --port=80
+
+minikube service demene1 --url
+------------------------------------------------------------------------
+
+LoadBalancer servisi clusterdan (küme) den dışarıya çıkartır.
+
+kubectl get pods ("tüm podalrı getirir.")
+
+-------------------------------Type lar---------------------------------------
+
+clusterıp= Sadece cluster içinden ulaşılabilir.
+
+
+-----------------------------Labellar ------------------------------------------
+
+kubectl label pod pod_ismi app=v1 (label oluşturur ve podu onun içine ekler)
+
+kubectl get pods -l app=v1 (labelin içindeki podları getirir.)
+
+--------------------------------------------------------------------------------
+
+--------------------------------Servis silme---------------------------------------
+
+kubectl delete svc demene1 ("demene1 servisini siler.")
+
+---------------------------------------------------------------------------------
+
+------------------------------------Scaling-------------------------------------------
+
+kubectl get rs("tüm repliakaları getirir.")
+
+kubectl scale deployment demene --replicas=5 ("demene deploymentını replikalarını oluşturur.")
+
+kubectl set image demene1 nginx_2 ("serverların kapanmadan anında versionlarının değişmesinde işe yarar")
+
+kubectl rollout status demene1 ("güncellenip güncellenmediklerini gösterir")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,44 @@
+
+
+mongod --dbpath . (mongo serverini başlatır başlatmadan önce mongonun dosyalarının bulunduğu path ı vermemiz gerekir)
+
+use shop ("shop databasesinin getirir eğerki shop database i yoksa oluşturur")
+
+db.products.insertOne({name:"ufuk",age:21}) (products isimli bir colection oluşturur ve içine insertler)
+
+db.products.find() (products ın içindeki dataları getirir)
+
+db.products.find().pretty() (dataları düzenli getirir)
+
+db.products.deleteOne({color:"red"})  (collectionlarda coloru ilk red olanı siler)
+
+db.products.updateOne({color:"red"},{$set : {surname:"tunca"}}) ("collectionda coloru red olan kısmı bulur eğerki surname kısmı varsa onu tunca yapar yoksa oluşturur. $ işareti mongoda fonksiyonlarda veya textlerin başında kullanılır.")
+
+db.products.updateMany({},{$set:{num:6}}) ("eğerki manylerde güzel parantezlerin içini boş bırakırsak tüm dataları seçer veya ona bi filter verirsek ilk olanı değil hepsini değiştirir.")
+
+db.products.deleteOne({num:6}) ("en üstteki num 6 ya sahip olanı siler")
+
+db.products.deleteMany({num:6}) ("tüm num 6 ya sahip olanları siler")
+
+db.products.insertMany([{name:"ufuk",tc:123456789,color:"blue"},{name:"barış",tc:987654321,color:"green"},{name:"tunca",tc:458741236,color:"grey"}]) ("insert many yaparken dataları bir array gibi köşeli
+parantez ile göndermemiz gerekir")
+
+db.products.find({color:"red"}).pretty() ("color u red olanları getirir")
+
+db.products.find({tc:{$gt:300000000}}).pretty()  ("tc si verilen rakamdan büyük olanları getirir gt greater than demektir")
+
+db.products.findOne({color:"red"})  ("coloru red olan 1 tane getirir pretty kullanılmaz")
+
+db.products.replaceOne({_id:Objectid(asdasdas)},{name:"ufuk"})  ("içindekilerin tümünü siler sadece name i ekler")
+
+db.products.find().toArray()  ("find 20 den sonra dataları göstermez")
+
+db.products.find({},{name:1}).pretty()   ("datalardan sadece name kısmını getirir id ile bilrikte gelir. 1 o değerin geliceğini belirtir")
+
+db.products.find({},{name:1,_id:0}).pretty()  ("id yi getirmez")
+
+db.products.drop() ("products collectionunu droplar")
+
+db.dropDatabase()  ("bulunduğu database i droplar")
+
+use ufuk ("ufuk databaseini kullanır yoksa oluşturur")

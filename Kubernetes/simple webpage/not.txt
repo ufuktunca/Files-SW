@@ -1,0 +1,2 @@
+nodejs ile sayfa vs serve ederken containeri runlarken -p ile port v
+vermek zorundasın çünkü containerdan geen port adresi local hosttaki bir port adresi ile buluşmalı

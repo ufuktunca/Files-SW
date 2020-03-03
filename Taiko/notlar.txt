@@ -1,0 +1,10 @@
+write("deneme",into(inputField({'id': 'password'})))
+
+click("Login",below("Remember me"))
+
+
+
+
+
+
+

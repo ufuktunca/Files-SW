@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timerfixv2
+  labels:
+    app: timerfixv2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: timerfixv2
+  template:
+    metadata:
+      labels:
+        app: timerfixv2
+    spec:
+      containers:
+      - name: timerfixv2
+        image: registry.gitlab.com/uftunca72/timerv2:latest
+        ports:
+        - containerPort: 80

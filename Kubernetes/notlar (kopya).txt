@@ -1,0 +1,156 @@
+stages:
+  - package
+  - deploy2dev
+  - cdc
+
+variables:
+  DEV: dev
+  QA: qa
+ 
+package:
+  stage: package
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "package started"
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t registry.gitlab.com/trendify/api:latest .
+    - docker tag registry.gitlab.com/trendify/api:latest registry.gitlab.com/trendify/api:$CI_PIPELINE_ID
+    - docker push registry.gitlab.com/trendify/api:latest
+    - docker push registry.gitlab.com/trendify/api:$CI_PIPELINE_ID
+
+package-migration:
+  stage: package
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "package started"
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -f DockerfileMigration -t registry.gitlab.com/trendify/api/migrate:latest .
+    - docker tag registry.gitlab.com/trendify/api/migrate:latest registry.gitlab.com/trendify/api/migrate:$CI_PIPELINE_ID
+    - docker push registry.gitlab.com/trendify/api/migrate:latest
+    - docker push registry.gitlab.com/trendify/api/migrate:$CI_PIPELINE_ID
+
+deploy2dev:
+  stage: deploy2dev
+  image: google/cloud-sdk:alpine
+  before_script:
+    - echo "deploy started"
+    - apk add libc6-compat curl openssl 
+    - echo "$SERVICEACCOUNT" | base64 -d > gcp_credentials.json
+    - gcloud auth activate-service-account --key-file ./gcp_credentials.json
+    - gcloud container clusters get-credentials $CLUSTERNAME --zone $ZONE --project $PROJECT
+    - gcloud components install kubectl
+    - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sh
+    - helm init --service-account tiller --tiller-namespace $DEV --wait
+    - helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+    - sed -i "s/\$VERSION/$CI_PIPELINE_ID/g" "k8s/deployment.yaml"
+    - sed -i "s/\$VERSION/$CI_PIPELINE_ID/g" "k8s/migration.yaml"
+    - sed -i "s/\KARTELAM_DB_USER/$KARTELAM_DB_USER/g" "k8s/deployment.yaml"
+    - sed -i "s/\KARTELAM_DB_PASSWORD/$KARTELAM_DB_PASSWORD/g" "k8s/deployment.yaml"
+    - sed -i "s/\KARTELAM_DB_HOST/$KARTELAM_DB_HOST/g" "k8s/deployment.yaml"
+  script:
+    - helm upgrade kartelamdb stable/mariadb -i --tiller-namespace $DEV --namespace $DEV --wait --force --set rootUser.password=$KARTELAM_DB_PASSWORD --timeout 600
+    - kubectl -n $DEV delete --ignore-not-found=true -f k8s/migration.yaml
+    - sleep 10
+    - kubectl -n $DEV apply -f k8s/migration.yaml
+    - kubectl -n $DEV apply -f k8s/deployment.yaml
+    - kubectl -n $DEV apply -f k8s/service.yaml
+    - kubectl -n $DEV apply -f k8s/ingress.yaml
+  tags:
+    - kubernetes
+    - dev
+
+cdc:
+  stage: cdc
+  image: apiaryio/dredd
+  before_script:
+    - echo "cdc started"
+  retry: 2
+  script:
+    - dredd cdc/*.apib http://api.kartelam.com
+  tags:
+    - kubernetes
+    - dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+stages:
+    - package
+    - deploy2dev
+
+package:
+  stage: package
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t registry.gitlab.com/uftunca72/timer-test .
+    - docker tag registry.gitlab.com/uftunca72/timer-test:latest registry.gitlab.com/uftunca72/timer-test:$CI_PIPELINE_ID
+    - docker push registry.gitlab.com/uftunca72/timer-test:latest
+    - docker push registry.gitlab.com/uftunca72/timer-test:$CI_PIPELINE_ID
+    
+deploy2dev:
+  stage: deploy2dev
+  image: google/cloud-sdk:alpine
+  before_script:
+    - apk add libc6-compat curl openssl 
+    - gcloud auth activate-service-account --key-file k8s/evenally.json
+    - gcloud container clusters get-credentials timerex2 --zone europe-west2-c --project even-ally-268710
+    - gcloud components install kubectl
+    - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | sh
+    - helm init --service-account tiller
+    - helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+  script:    
+    - kubectl apply -f k8s/deployment.yaml
+    - kubectl expose deployment timerfixv2 --type LoadBalancer --port 80 --target-port 5000
+
+
+
+
+
+
+
+
+
+
+
+
+    
+deploy2dev:
+  stage: deploy2dev
+  image: google/cloud-sdk:alpine
+  before_script:
+    - gcloud auth activate-service-account --key-file k8s/evenally.json
+    - gcloud container clusters get-credentials timerex3 --zone europe-west2-b --project even-ally-268710
+    - gcloud components install kubectl
+  script:    
+    - kubectl apply -f k8s/deployment.yaml
+    - kubectl expose deployment timerfixv2 --type LoadBalancer --port 80 --target-port 5000
